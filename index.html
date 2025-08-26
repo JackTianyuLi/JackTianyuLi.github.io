@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Homepage</title>
+    <title>Homepage - Tianyu Li</title>
     <style>
         * {
-            margin: 0;
-            padding: 0;
+            margin-top: 5px; /* 增加间距，避免被导航栏遮挡 */
+            padding-top: 5px;
             box-sizing: border-box;
         }
 
         body {
             font-family: 'Georgia', 'Times New Roman', serif;
-            line-height: 1.6;
-            color: #333;
-            background: #fafafa;
+            line-height: 1.2;
+            color: #2c3e50 20%;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);;
             font-size: 16px;
         }
 
@@ -27,7 +27,8 @@
 
         /* Header & Navigation */
         header {
-            background: white;
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
             border-bottom: 1px solid #e0e0e0;
             position: fixed;
             width: 100%;
@@ -105,27 +106,20 @@
 
         .profile-photo {
             width: 200px;
-            height: 250px;
+            height: 200px;
             border-radius: 8px;
             object-fit: cover;
             border: 3px solid #e0e0e0;
             margin-bottom: 1rem;
         }
 
-        .photo-placeholder {
-            width: 200px;
-            height: 250px;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #f8f9fa;
-            color: #666;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
+        .photo-placeholder img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        /* Optional: Center the image if it's not a perfect fit */
+        object-position: center;
+        border-radius: 6px;
         }
 
         .photo-placeholder:hover {
@@ -186,7 +180,7 @@
             color: #2c3e50;
             border-bottom: 2px solid #2c3e50;
             padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             font-weight: bold;
         }
 
@@ -230,6 +224,11 @@
         /* Projects Page - Academic Style */
         .project-list {
             list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .project-list li {
+            margin-bottom: 20px; /* Adjust as needed for spacing between projects */
         }
 
         .project-item {
@@ -399,11 +398,11 @@
 <body>
     <header>
         <nav class="container">
-            <a href="#" class="logo">Academic Portfolio</a>
+            <a href="#" class="logo">Welcome to the personal homepage of Tianyu Li!</a>
             <ul class="nav-links">
-                <li><a href="../index.html" onclick="showPage('home')" class="active">Home</a></li>
-                <li><a href="../index.html#projects" onclick="showPage('projects')">Projects</a></li>
-                <li><a href="../index.html#cv" onclick="showPage('cv')">CV</a></li>
+                <li><a href="./index.html" onclick="showPage('home')" class="active">Home</a></li>
+                <li><a href="./index.html#projects" onclick="showPage('projects')">Projects</a></li>
+                <li><a href="./index.html#cv" onclick="showPage('cv')">CV</a></li>
             </ul>
         </nav>
     </header>
@@ -414,11 +413,10 @@
             <div class="academic-header">
                 <div class="profile-section">
                     <div id="photo-container">
-                        <div class="photo-placeholder" onclick="document.getElementById('photo-upload').click()">
+                        <div class="profile-photo">
                             <img src="./images/avatar1.jpg" alt="Tianyu Li" style="width:100%; height:auto;">
                         </div>
                     </div>
-                    <input type="file" id="photo-upload" class="photo-upload" accept="image/*" onchange="loadPhoto(event)">
                     
                     <div class="contact-info">
                         <strong>Contact Information</strong><br>
@@ -433,7 +431,8 @@
 
                 <div class="bio-section">
                     <h1 class="name">Tianyu Li</h1>
-                    <p class="title">Data Science Student | Visiting Scholar at UC Berkeley</p>
+                    <p class="title">Undergraduate of SUSTech | Visiting Student at UC Berkeley</p>
+
                     
                     <div class="bio-text">
                         <p>Welcome to my academic homepage. I am an undergraduate student (senior) majoring in <strong>Data Science and Big Data Technology</strong> at Southern University of Science and Technology (SUSTech). Currently (Fall 2025), I am studying as a visiting student in the Berkeley International Study Program (BISP) at the University of California, Berkeley.</p>
@@ -486,7 +485,7 @@
                     <div class="item-date">2022.08 - 2026.06 (Expected)</div>
                     <div class="item-title">B.Sc. in Data Science and Big Data Technology</div>
                     <div class="item-subtitle">Southern University of Science and Technology (SUSTech), China</div>
-                    <div class="item-description">Comprehensive curriculum covering machine learning, statistical analysis, and big data technologies. Focus on practical applications in data science and AI.</div>
+                    <div class="item-description">Comprehensive curriculum covering machine learning, statistical analysis, and big data technologies. Focus on practical applications in data science and language/vision models.</div>
                 </div>
                 <div class="education-item">
                     <div class="item-date">2025.08 - 2025.12</div>
@@ -515,12 +514,13 @@
 
         <!-- Research/Projects Page -->
         <div id="projects" class="page">
-            <h2 class="section-title">Projects</h2>
-            
-            <ul class="project-list">
-                <a href="./projects/STA323report.html" 
-                   style="text-decoration: none; color: inherit; display: block;"
-                   target="_blank">
+    <h2 class="section-title">Projects</h2>
+    
+    <ul class="project-list">
+        <li>
+            <a href="./projects/STA323report.html" 
+               style="text-decoration: none; color: inherit; display: block;"
+               target="_blank">
                 <div class="project-title">SUSTech STA323 Project 1</div>
                 <div class="project-meta">Course project</div>
                 <div class="project-description">
@@ -531,16 +531,16 @@
                     <span class="tech-tag">Learning notes</span>
                 </div>
             </a>
-
-            </ul>
-        </div>
+        </li>
+    </ul>
+</div>
 
                 <!-- CV Page -->
         <div id="cv" class="page">
             <h2 class="section-title">Curriculum Vitae</h2>
             
             <div id="pdf-container">
-                <iframe src="./files/Tianyu_Li_CV.pdf" style="width:100%; height:600px; border:none;"></iframe>
+                <iframe src="./files/TianyuLi_CV.pdf" style="width:100%; height:600px; border:none;"></iframe>
             </div>
 
             <div style="margin-top: 2rem; text-align: center; color: #666;">

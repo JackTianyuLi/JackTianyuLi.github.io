@@ -1,0 +1,83 @@
+/* 全局基础样式 */
+body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    line-height: 1.2;
+    color: #2c3e50;
+    background: #f4f4f4; /* 为报告页面设置一个干净的背景色 */
+    font-size: 16px;
+    margin: 0;
+    padding: 2rem; /* 给页面内容整体增加内边距 */
+}
+
+/* 核心内容区域 */
+.container {
+    max-width: 1000px; /* 设置内容的最大宽度 */
+    margin: 0 auto; /* 关键：这会让容器在页面中水平居中 */
+    padding: 2rem; /* 增加容器内部的内边距 */
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 博客内容样式 */
+.blog-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.blog-title {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.blog-meta {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.blog-content {
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.blog-content h3 {
+    color: #2c3e50;
+    margin: 2rem 0 1rem 0;
+    font-size: 1.3rem;
+}
+
+.blog-content p {
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+/* 返回按钮 */
+.back-btn {
+    display: inline-block;
+    color: #2c3e50;
+    text-decoration: none;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.back-btn:hover {
+    text-decoration: underline;
+}
+
+/* 技术标签样式 */
+.tech-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem; /* 增加标签与上方内容的间距 */
+}
+
+.tech-tag {
+    background: #2c3e50;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
