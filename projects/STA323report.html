@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STA323 Survival Analysis Project</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+  <style>
+    /* 将整体内容区限制宽度并自动居中，同时增加左右内边距 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0 auto;
+      max-width: 900px;
+      padding: 20px 40px;
+      line-height: 1.6;
+    }
+    h1, h2, h3 { color: #333; }
+    p { margin: 1em 0; }
+    img { margin: 10px 0; max-width: 100%; }
+    code { background: #f4f4f4; padding: 2px 4px; }
+    ul { list-style: disc; margin-left: 20px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>STA323 Survival Analysis Project</h1>
+  </header>
+  
+  <h3 id="section-1">Section 1</h3>
+  <p>
+    In the case provided by Databrick, the task of survival analysis is using the <code>Tenure</code> to estimate the probability of whether the customer is still with the company by fitting the Kaplan-Meier model to the dataset, and we have our result plot here:
+  </p>
+  <p>
+    <img src="./STA323project/1.png" alt="1" style="zoom:50%;" />
+  </p>
+  <p>
+    Furthermore, when a covariate is considered in this problem, we can conduct such analysis on different groups respectively and hypothesis tests (pairwise log-rank test) to check whether the groups are statistically equivalent.
+  </p>
+  <ul>
+    <li>
+      <p>Covariates with insignificant group differences:</p>
+      <p>
+        <img src="./STA323project/3.png" alt="3" style="zoom:50%;" />
+        <img src="./STA323project/4.png" alt="4" style="zoom:50%;" />
+        <img src="./STA323project/7.png" alt="7" style="zoom:50%;" />
+      </p>
+    </li>
+    <li>
+      <p>Covariates with significant group differences:</p>
+      <p>
+        <img src="./STA323project/2.png" alt="2" style="zoom:50%;" />
+        <img src="./STA323project/5.png" alt="5" style="zoom:50%;" />
+        <img src="./STA323project/6.png" alt="6" style="zoom:50%;" />
+        <img src="./STA323project/8.png" alt="8" style="zoom:50%;" />
+        <img src="./STA323project/9.png" alt="9" style="zoom:50%;" />
+        <img src="./STA323project/10.png" alt="10" style="zoom:50%;" />
+        <img src="./STA323project/11.png" alt="11" style="zoom:50%;" />
+        <img src="./STA323project/12.png" alt="12" style="zoom:50%;" />
+        <img src="./STA323project/13.png" alt="13" style="zoom:50%;" />
+        <img src="./STA323project/14.png" alt="14" style="zoom:50%;" />
+        <img src="./STA323project/15.png" alt="15" style="zoom:50%;" />
+        <img src="./STA323project/16.png" alt="16" style="zoom:50%;" />
+      </p>
+    </li>
+  </ul>
+  <p>
+    With such a fitted model, we can also predict the survival probability given a time value in a certain group:
+  </p>
+  <p>
+    <img src="./STA323project/17.png" alt="17" style="zoom:60%;" />
+  </p>
+  
+  <h3 id="section-2">Section 2</h3>
+  <p>
+    Meanwhile, we can also use the Cox Proportional Hazard model to predict the probabilities of failure in different groups:
+  </p>
+  <p>$$h(t) = h_0(t) + exp(\sum_i b_i x_i)$$</p>
+  <p>
+    in which it is assumed that the influence of time and different covariate categories can be separated.
+  </p>
+  <p>
+    After converting the values of categorical variables to 0 or 1, we have our fitted model:
+  </p>
+  <p>
+    <img src="./STA323project/2.1.png" alt="2.1" style="zoom:50%;" />
+    <img src="./STA323project/2.2.png" alt="2.2" style="zoom:50%;" />
+  </p>
+  <p>
+    Then, the proportional hazard test is used to check whether the requirements assumed are met:
+  </p>
+  <p>
+    <img src="./STA323project/2.3.png" alt="2.3" style="zoom:67%;" />
+    <img src="./STA323project/2.4.png" alt="2.4" style="zoom:33%;" />
+  </p>
+  <p>
+    Also, Kaplan-Meier curves on a log-log scale can be used as well for a better view of our results:
+  </p>
+  <p>
+    <img src="./STA323project/2.5.png" alt="2.5" style="zoom:50%;" />
+    <img src="./STA323project/2.6.png" alt="2.6" style="zoom:50%;" />
+    <img src="./STA323project/2.7.png" alt="2.7" style="zoom:50%;" />
+    <img src="./STA323project/2.8.png" alt="2.8" style="zoom:50%;" />
+  </p>
+  
+  <h3 id="section-3">Section 3</h3>
+  <p>
+    In an accelerated failure time model, we denote the ratio between groups when using log-logistic accelerated failure time as $$\frac{1}{1 + (\frac{t}{\sigma}e^{X\beta})^\lambda}$$.
+  </p>
+  <p>
+    After converting the values of categorical variables to 0 or 1, we have our fitted model:
+  </p>
+  <p>
+    <img src="./STA323project/3.1.png" alt="3.1" style="zoom:50%;" />
+    <img src="./STA323project/3.2.png" alt="3.2" style="zoom:50%;" />
+  </p>
+  <p>
+    Some plots are made to test our assumptions: the model adheres to the <code>Proportional Odds</code> assumption if lines in the plot are parallel, and the <code>specified distribution</code> is appropriate for this model if the lines are straight.
+  </p>
+  <p>
+    <img src="./STA323project/3.3.png" alt="3.3" style="zoom:50%;" />
+    <img src="./STA323project/3.4.png" alt="3.4" style="zoom:50%;" />
+    <img src="./STA323project/3.5.png" alt="3.5" style="zoom:50%;" />
+    <img src="./STA323project/3.6.png" alt="3.6" style="zoom:50%;" />
+    <img src="./STA323project/3.7.png" alt="3.7" style="zoom:50%;" />
+    <img src="./STA323project/3.8.png" alt="3.8" style="zoom:50%;" />
+    <img src="./STA323project/3.9.png" alt="3.9" style="zoom:50%;" />
+    <img src="./STA323project/3.10.png" alt="3.10" style="zoom:50%;" />
+  </p>
+  
+  <h3 id="section-4">Section 4</h3>
+  <p>
+    With the results above, we can make inferences and plots about more information, e.g. future profits:
+  </p>
+  <p>
+    <img src="./STA323project/4.1.png" alt="4.1" style="zoom:67%;" />
+  </p>
+  <p>
+    <img src="./STA323project/4.2.png" alt="4.2" style="zoom:50%;" />
+    <img src="./STA323project/4.3.png" alt="4.3" style="zoom:50%;" />
+  </p>
+</body>
+</html>

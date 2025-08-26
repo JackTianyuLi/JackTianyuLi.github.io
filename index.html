@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Homepage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fafafa;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #555;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 400;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #2c3e50;
+            text-decoration: underline;
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
+            background: white;
+            padding: 2rem 0;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Home Page - Academic Style */
+        .academic-header {
+            display: flex;
+            gap: 3rem;
+            margin-bottom: 3rem;
+            align-items: flex-start;
+        }
+
+        .profile-section {
+            flex-shrink: 0;
+        }
+
+        .profile-photo {
+            width: 200px;
+            height: 250px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 3px solid #e0e0e0;
+            margin-bottom: 1rem;
+        }
+
+        .photo-placeholder {
+            width: 200px;
+            height: 250px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .photo-placeholder:hover {
+            border-color: #2c3e50;
+            color: #2c3e50;
+        }
+
+        .photo-upload {
+            display: none;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .contact-info a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+
+        .bio-section {
+            flex: 1;
+        }
+
+        .name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .title {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .bio-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            text-align: justify;
+        }
+
+        /* Academic Sections */
+        .academic-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+        }
+
+        .news-item, .award-item, .education-item, .experience-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .news-item:last-child,
+        .award-item:last-child,
+        .education-item:last-child,
+        .experience-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-date {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .item-subtitle {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-description {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Projects Page - Academic Style */
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .project-item:hover {
+            border-color: #2c3e50;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .project-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-description {
+            color: #555;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .tech-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tech-tag {
+            background: #2c3e50;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        /* CV Page */
+        .cv-upload {
+            text-align: center;
+            padding: 2rem;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #fafafa;
+            margin-bottom: 2rem;
+        }
+
+        .upload-btn {
+            background: #2c3e50;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #34495e;
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        /* Blog Content */
+        .blog-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .blog-title {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .blog-meta {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .blog-content {
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .blog-content h3 {
+            color: #2c3e50;
+            margin: 2rem 0 1rem 0;
+            font-size: 1.3rem;
+        }
+
+        .blog-content p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+        }
+
+        .back-btn {
+            display: inline-block;
+            color: #2c3e50;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .academic-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 2rem;
+            }
+
+            .profile-photo,
+            .photo-placeholder {
+                width: 150px;
+                height: 188px;
+            }
+
+            .name {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 0 15px;
+            }
+        }
+
+        /* Links */
+        a {
+            color: #2c3e50;
+        }
+
+        a:hover {
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="#" class="logo">Academic Portfolio</a>
+            <ul class="nav-links">
+                <li><a href="../index.html" onclick="showPage('home')" class="active">Home</a></li>
+                <li><a href="../index.html#projects" onclick="showPage('projects')">Projects</a></li>
+                <li><a href="../index.html#cv" onclick="showPage('cv')">CV</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <div class="academic-header">
+                <div class="profile-section">
+                    <div id="photo-container">
+                        <div class="photo-placeholder" onclick="document.getElementById('photo-upload').click()">
+                            <img src="./images/avatar1.jpg" alt="Tianyu Li" style="width:100%; height:auto;">
+                        </div>
+                    </div>
+                    <input type="file" id="photo-upload" class="photo-upload" accept="image/*" onchange="loadPhoto(event)">
+                    
+                    <div class="contact-info">
+                        <strong>Contact Information</strong><br>
+                        Email: <a href="mailto:jacktianyuli@gmail.com">jacktianyuli@gmail.com</a><br>
+                        
+                        <strong>Links</strong><br>
+                        <a href="https://github.com/JackTianyuLi" target="_blank">GitHub</a>
+                        <a href="https://www.kaggle.com/code/jacktianyuli/" target="_blank">Kaggle</a>
+                        <a href="https://www.instagram.com/jtl__123/" target="_blank">Instagram</a>   
+                    </div>
+                </div>
+
+                <div class="bio-section">
+                    <h1 class="name">Tianyu Li</h1>
+                    <p class="title">Data Science Student | Visiting Scholar at UC Berkeley</p>
+                    
+                    <div class="bio-text">
+                        <p>Welcome to my academic homepage. I am an undergraduate student (senior) majoring in <strong>Data Science and Big Data Technology</strong> at Southern University of Science and Technology (SUSTech). Currently (Fall 2025), I am studying as a visiting student in the Berkeley International Study Program (BISP) at the University of California, Berkeley.</p>
+                        
+                        <p>My career goal is to become a Data Scientist or Machine Learning Engineer who develops solutions to optimize human performance and enhance well-being.</p>
+                        
+                        <p>Beyond academics, I am passionate about sports, particularly volleyball and tennis. I admire the technical excellence of players like <a href="https://en.wikipedia.org/wiki/Simone_Giannelli" target="_blank">Simone Giannelli</a> and <a href="https://en.wikipedia.org/wiki/Ran_Takahashi" target="_blank">Takahashi Ran</a>, whose precision and strategy inspire my approach to both sports and research.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Section -->
+            <div class="academic-section">
+                <h2 class="section-title">🔥 News</h2>
+                <div class="news-item">
+                    <div class="item-date">August 2025</div>
+                    <div class="item-description">🎉🎉 To be updated ...</div>
+                </div>
+            </div>
+
+            <!-- Experience Section -->
+            <div class="academic-section">
+                <h2 class="section-title">💼 Experience</h2>
+                <div class="experience-item">
+                    <div class="item-date">2025.06 - 2025.07</div>
+                    <div class="item-title">Project Intern</div>
+                    <div class="item-subtitle">Tencent Music Entertainment Group, Shenzhen, China</div>
+                    <div class="item-description">Worked on backend model (sentence classification) fine-tuning and optimization for improved performance.</div>
+                </div>
+            </div>
+
+            <!-- Publication Section-->
+            <div class="academic-section">
+                <h2 class="section-title">📝 Publications</h2>
+                <div class="publication-item">
+                    <div class="item-date">2025.08</div>
+                    <div class="item-title">To be updated</div>
+                    <div class="item-authors">Authors: ABC</div>
+                    <div class="item-journal">Journal/Conference: XYZ</div>
+                    <div class="item-description">
+                        <a href="link/to/paper.pdf" target="_blank">📄 Paper (PDF)</a> |
+                    </div>
+                </div>
+            </div>
+
+            <!-- Education Section -->
+            <div class="academic-section">
+                <h2 class="section-title">📚 Education</h2>
+                <div class="education-item">
+                    <div class="item-date">2022.08 - 2026.06 (Expected)</div>
+                    <div class="item-title">B.Sc. in Data Science and Big Data Technology</div>
+                    <div class="item-subtitle">Southern University of Science and Technology (SUSTech), China</div>
+                    <div class="item-description">Comprehensive curriculum covering machine learning, statistical analysis, and big data technologies. Focus on practical applications in data science and AI.</div>
+                </div>
+                <div class="education-item">
+                    <div class="item-date">2025.08 - 2025.12</div>
+                    <div class="item-title">Berkeley International Study Program (BISP)</div>
+                    <div class="item-subtitle">University of California, Berkeley, USA</div>
+                    <div class="item-description">Gained international exposure and expanded my expertise through advanced statistics and CS coursework at one of the world's leading universities.</div>
+
+                </div>
+            </div>
+
+            <!-- Awards Section -->
+            <div class="academic-section">
+                <h2 class="section-title">🎖 Honors and Awards</h2>
+                <div class="award-item">
+                    <div class="item-date">September 2024</div>
+                    <div class="item-title">Second Prize - National Mathematical Modeling Contest</div>
+                    <div class="item-subtitle">Guangdong Division, China</div>
+                </div>
+                <div class="award-item">
+                    <div class="item-date">February 2024</div>
+                    <div class="item-title">Honorable Mention - Mathematical Contest in Modeling (MCM)</div>
+                    <div class="item-subtitle">COMAP International Competition</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Research/Projects Page -->
+        <div id="projects" class="page">
+            <h2 class="section-title">Projects</h2>
+            
+            <ul class="project-list">
+                <a href="./projects/STA323report.html" 
+                   style="text-decoration: none; color: inherit; display: block;"
+                   target="_blank">
+                <div class="project-title">SUSTech STA323 Project 1</div>
+                <div class="project-meta">Course project</div>
+                <div class="project-description">
+                    A demonstration of the full pipeline of survival analysis and its applications in the cases provided by Databrick.
+                </div>
+                <div class="tech-tags">
+                    <span class="tech-tag">Survival analysis</span>
+                    <span class="tech-tag">Learning notes</span>
+                </div>
+            </a>
+
+            </ul>
+        </div>
+
+                <!-- CV Page -->
+        <div id="cv" class="page">
+            <h2 class="section-title">Curriculum Vitae</h2>
+            
+            <div id="pdf-container">
+                <iframe src="./files/Tianyu_Li_CV.pdf" style="width:100%; height:600px; border:none;"></iframe>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: center; color: #666;">
+                <p>Alternatively, you can <a href="mailto:jacktianyuli@gmail.com">contact me</a> to request a copy of my CV.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update navigation
+            const navLinks = document.querySelectorAll('.nav-links a');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate corresponding nav link
+            const activeLink = document.querySelector(`[onclick="showPage('${pageId}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+        
+        function showProjectBlog(projectId) {
+            const blogId = projectId + '-blog';
+            showPage(blogId);
+        }
+        
+        function loadPhoto(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoContainer = document.getElementById('photo-container');
+                    photoContainer.innerHTML = `
+                        <img src="${e.target.result}" alt="Profile Photo" class="profile-photo" onclick="document.getElementById('photo-upload').click()" style="cursor: pointer;" title="Click to change photo">
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select a valid image file.');
+            }
+        }
+        
+        function loadPDF(event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                const pdfContainer = document.getElementById('pdf-container');
+                pdfContainer.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <button class="upload-btn" onclick="document.getElementById('pdf-input').click()" style="margin-right: 1rem;">
+                            🔄 Change PDF
+                        </button>
+                        <button class="upload-btn" onclick="downloadPDF('${fileURL}', '${file.name}')">
+                            📥 Download PDF
+                        </button>
+                    </div>
+                    <iframe src="${fileURL}" class="pdf-viewer" title="CV PDF Viewer">
+                        <p>Your browser does not support PDF viewing. <a href="${fileURL}" target="_blank">Click here to view the PDF</a>.</p>
+                    </iframe>
+                `;
+            } else {
+                alert('Please select a valid PDF file.');
+            }
+        }
+        
+        function downloadPDF(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename || 'CV.pdf';
+            link.click();
+        }
+
+        // Smooth scrolling and academic presentation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth transitions
+            document.body.style.transition = 'all 0.3s ease';
+        });
+    </script>
+</body>
+</html>
