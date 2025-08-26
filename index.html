@@ -6,8 +6,8 @@
     <title>Homepage - Tianyu Li</title>
     <style>
         * {
-            margin-top: 5px; /* 增加间距，避免被导航栏遮挡 */
-            padding-top: 5px;
+            margin-top: 0px; /* 增加间距，避免被导航栏遮挡 */
+            padding-top: 0px;
             box-sizing: border-box;
         }
 
@@ -30,7 +30,6 @@
             background: rgba(255, 255, 255, 0.95); 
             backdrop-filter: blur(10px);
             border-bottom: 1px solid #e0e0e0;
-            position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
@@ -41,7 +40,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
+            padding: 1rem;
+            padding-top: 1.5rem
         }
 
         .logo {
@@ -75,7 +75,8 @@
             margin-top: 70px;
             min-height: calc(100vh - 70px);
             background: white;
-            padding: 2rem 0;
+            padding-left: 2rem;
+            padding-right: 2rem;
         }
 
         .page {
@@ -522,7 +523,7 @@
                style="text-decoration: none; color: inherit; display: block;"
                target="_blank">
                 <div class="project-title">SUSTech STA323 Project 1</div>
-                <div class="project-meta">Course project</div>
+                <div class="project-meta">Course project, 2025.04</div>
                 <div class="project-description">
                     A demonstration of the full pipeline of survival analysis and its applications in the cases provided by Databrick.
                 </div>
