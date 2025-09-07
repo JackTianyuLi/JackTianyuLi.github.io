@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS180 Project 0</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <link rel="stylesheet" href="../style.css">
+ 
+</head>
+<div class="container">
+<body>
+  <header>
+    <h1>CS180 Project 1</h1>
+  </header>
+  
+  <h3 id="Intro">Introduction</h3>
+  <p>
+    In this <a href="https://cal-cs180.github.io/fa25/hw/proj1/index.html" target="_blank">project</a>, we are required to implement an image alignment algorithm that colorizing the glass plate images from <a href="https://www.loc.gov/collections/prokudin-gorskii/?st=grid" target="_blank">Prokudin-Gorskii photo collection</a> by aligning the three channels of each image.  
+  </p>
+
+  <h3 id="part-1">Part 1: Simple implementation on smaller <code>.jpg</code> images</h3>
+  <p>
+    In this part, my implementation is simple: search over the displacement window of \([-15, 15]\) pixels to find the best displacement for red and green channels that minimize the errors with the blue channel. Below are my results, each with the displacements of red and green channels:
+  </p>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/cathedral.jpg" alt="Part1 image 1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Cathedral <br>
+          R: (12, 3) G: (5, 2) <br>
+          Runtime: 0.63s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/monastery.jpg" alt="Part1 image 2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Monastery <br>
+          R: (3, 2) G: (-3, 2) <br>
+          Runtime: 0.57s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/tobolsk.jpg" alt="Part1 image 3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Tobolsk <br>
+          R: (6, 3) G: (3, 3) <br>
+          Runtime: 1.67s   
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    It is worth noticing that I tried calculating the errors with <b>MSE</b> 
+    (Mean Squared Error, \(\frac{1}{hw}\sum_{i=1}^h\sum_{j=1}^w (\mathbf{X}_{ij} - \mathbf{Y}_{ij})^2\)) 
+    and <b>NCC</b> (Normalized Cross-Correlation, \(\frac{\mathbf{x}^T\mathbf{y}}{\Vert\mathbf{x}\Vert_2\Vert\mathbf{y}\Vert_2}\)).
+    While both of them turned out to work well in terms of visual effects, the runtime of NCC was larger than that of MSE,
+    with a runtime of 1.11s on <code>cathedral.jpg</code> compared to 0.63s, so I used MSE for all of the images to enhance speed.
+    Also, it is important to crop the image before processing it, as the black edges would influence error calculation 
+    and the aligning process would be less accurate. I cropped 5% of the height and 10% of the width of each image before processing.
+  </p>
+  <div style="display: flex; justify-content: space-around; gap: 1px; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/monastery_1.jpg" alt="Part1 image 4.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Without cropping
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/monastery.jpg" alt="Part1 image 4.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          With cropping 
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="part-2">Part 2: Coarse-to-fine pyramid speedup on large <code>.tif</code> images</h3>
+  <p>
+    Next, I applied the algorithms to the larger images. To reduce runtime, I downsampled each image at 4 levels, 
+    each averaging the pixels in 2x2 blocks.  At level \(k\), the optimal shift \((i_k, j_k)\) is found within a search window
+    \(([-windowH_k, windowH_k], [-windowW_k, windowW_k])\), then the shift \((i_{k+1}, j_{k+1})\) at the next level with a finer image 
+    is found within a search window \(([-windowH_{k+1} + 2i_{k+1}, windowH_{k+1} + 2i_{k+1}], [-windowW_{k+1} + 2j_{k+1}, windowW_{k+1} + 2j_{k+1}])\). 
+    The window sizes at each level (from coarse to fine) were set to [8, 6, 4, 2], [16, 8, 4, 2], and [18, 9, 6, 3].
+    Here are the results:
+  </p>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/church.jpg" alt="Part2 image 1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Church <br>
+          R: (58, -4) G: (25, 3) <br>
+          Runtime: 10.26s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/emir_new.jpg" alt="Part2 image 2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Emir <br>
+          R: (107, 40) G: (49, 23) <br>
+          Runtime: 16.21s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/harvesters.jpg" alt="Part2 image 3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Harvesters <br>
+          R: (124, 13) G: (61, 16) <br>
+          Runtime: 13.09s   
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/icon.jpg" alt="Part2 image 4" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Icon <br>
+          R: (90, 23) G: (41, 17) <br>
+          Runtime: 13.44s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/italil.jpg" alt="Part2 image 5" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Italil <br>
+          R: (77, 35) G: (38, 21) <br>
+          Runtime: 13.40s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/lastochikino.jpg" alt="Part2 image 6" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Lastochikino <br>
+          R: (76, -9) G: (-3, -2) <br>
+          Runtime: 13.30s   
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/lugano.jpg" alt="Part2 image 7" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Lugano <br>
+          R: (93, -29) G: (41, -17) <br>
+          Runtime: 13.36s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/melons.jpg" alt="Part2 image 8" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Melons <br>
+          R: (179, 12) G: (85, 9) <br>
+          Runtime: 22.56s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/self_portrait.jpg" alt="Part2 image 9" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Self Portrait <br>
+          R: (176, 36) G: (81, 29) <br>
+          Runtime: 23.20s   
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; gap: 1px; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/siren.jpg" alt="Part2 image 10" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Siren <br>
+          R: (97, -25) G: (50, -7) <br>
+          Runtime: 13.92s 
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/three_generations.jpg" alt="Part2 image 11" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Three Generations <br>
+          R: (112, 10) G: (55, 13) <br>
+          Runtime: 13.22s  
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    Extra self-selected images:
+  </p>
+  <div style="display: flex; justify-content: space-around; gap: 1px; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/kivach.jpg" alt="Part2 image 12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Kivach <br>
+          R: (126, 19) G: (37, 11) <br>
+          Runtime: 14.02s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/isfandiyar.jpg" alt="Part2 image 13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Isfandiyar <br>
+          R: (105, 1) G: (41, 5) <br>
+          Runtime: 13.45s   
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/religious_painting.jpg" alt="Part2 image 14" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Religious Painting <br>
+          R: (52, 38) G: (35, 24) <br>
+          Runtime: 13.18s   
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="part-3">Part 3: Bells and whistles</h3>
+  <p>
+    During the implementation on <code>emir.tif</code>, it was not as easy as I expected,
+    as the outcome image is still awful after a few refinements on my algorithm. Therefore, I decided to 
+    use the gradient calculated by <a href="https://en.wikipedia.org/wiki/Sobel_operator" target="_blank">Sobel operator</a> as the alignment clue:
+  </p>
+  <div style="display: flex; justify-content: space-around; gap: 1px; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/emir.jpg" alt="Part3 image 1.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Without using gradient
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/emir_new.jpg" alt="Part3 image 1.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          After using gradient
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+  Meanwhile, the colors of some of the images were not as realistic as expected, being either too blueish or too yellowish.
+  I attempted to adjust the white balance of the images by matching each channel's mean to that of an assigned channel:
+  </p>
+  <div style="display: flex; justify-content: space-around; gap: 1px; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/church.jpg" alt="Part3 image 2.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Church, before adjust WB
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/church_new.jpg" alt="Part3 image 2.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Church, after adjusting WB
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; gap: 1px; margin-top: 2rem; margin-bottom: 2rem;">
+  <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/lastochikino.jpg" alt="Part3 image 2.3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Lastochikino, before adjust WB
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_1/lastochikino_new.jpg" alt="Part3 image 2.4" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Lastochikino, after adjusting WB
+        </figcaption>
+    </figure>
+  </div>
+  
+  <h3 id="summary">Summary</h3>
+  <p>
+  This project is not very hard, as the way to build the algorithm is very clear. However, it
+  is a rather interesting one, though I have already done some other image processing projects before.
+  I believe the projects of this course would be more and more interesting later on.
+  </p>
+
+</body>
+</div>
+
+</html>
