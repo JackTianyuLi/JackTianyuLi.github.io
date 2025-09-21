@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS180 Project 2</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <link rel="stylesheet" href="../style.css">
+ 
+</head>
+<div class="container">
+<body>
+  <header>
+    <h1>CS180 Project 2</h1>
+  </header>
+  
+  <h3 id="Intro">Introduction</h3>
+  <p>
+    In this <a href="https://cal-cs180.github.io/fa25/hw/proj2/index.html" target="_blank">project</a>, 
+    we are required to experiment with filters and frequency components on various types of images.
+  </p>
+
+  <h3 id="part-1">Part 1: Filters</h3>
+  <h4 id="subpart-1-1">1.1: Implementation of convolution</h4>
+  <p>
+    As is known, convolution can be formulated as:
+    \[
+    G = H * F, G[i, j]= \sum_{u=-k}^k \sum_{v=-k}^k H[u, v]F[i - u, i - v],
+    \]
+    where \(H\) is the kernel, \(F\) is the input image, and \(G\) is the output image. 
+    These are my implementations of convolution, using 4 (<code>conv_1</code>) and 2 (<code>conv_2</code>) 
+    for-loops, respectively:
+  </p>
+  <pre><code>
+  import numpy as np
+
+  def conv_1(kernel, img):
+    def conv_1(kernel, img):
+    h,w = kernel.shape
+    k_h = h // 2
+    k_w = w // 2
+    H, W = img.shape
+    img_padded = np.zeros((H + 2 * k_h, W + 2 * k_w))
+    img_padded[k_h:-k_h, k_w:-k_w]=img
+    img_new = np.zeros_like(img)
+    for i in range(H):
+        for j in range(W):
+            for u in range(-k_h, k_h + 1):
+                for v in range(-k_w, k_w + 1):
+                    img_new[i, j] += img_padded[i + k_h - u, j + k_w - v] * kernel[u, v]
+    return img_new
+  </code></pre>
+  <pre><code>
+  import numpy as np
+
+  def conv_2(kernel, img):
+    h,w = kernel.shape
+    k_h = h // 2
+    k_w = w // 2
+    H, W = img.shape
+    img_padded = np.zeros((H + 2 * k_h, W + 2 * k_w))
+    img_padded[k_h:-k_h, k_w:-k_w] = img
+    img_new = np.zeros_like(img)  
+    for i in range(k_h * 2 + 1):
+        for j in range(k_w * 2 + 1):
+            img_new += img_padded[2 * k_h - i: -i or None, 2 * k_h - j :-j or None] * kernel[i, j]        
+    return img_new
+  </code></pre>
+  <p>
+    I convolved a picture of myself with the \(9 \times 9\) box filter, using the functions above:
+  </p>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.1before.jpg" alt="Part1.1 image 1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Original image  
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.1after4.jpg" alt="Part1.1 image 2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          <code>conv_1</code> runtime: 49.84s 
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.1after2.jpg" alt="Part1.1 image 3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          <code>conv_2</code> runtime: 0.33s 
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    It is clear that conv_2 saves a large amount of time, and here are also convolution results 
+    with difference operators \(D_x\) and \(D_y\):
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 650px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.1gradx.jpg" alt="Part1.1 image 4.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          \(D_x\)
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.1grady.jpg" alt="Part1.1 image 4.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          \(D_y\) 
+        </figcaption>
+    </figure>
+  </div>
+
+  <h4 id="subpart-1-2">1.2: Finite difference operator</h4>
+  <p> 
+  In this section, I primarily experimented with <code>cameraman.jpg</code>, on gradient computation and edge detection 
+  (any pixel with a gradient magnitude larger than a threshold can be considered as on the edge, here by trial, I set it to 0.35): 
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 750px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.2gradx.jpg" alt="Part1.2 image 1.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          \(D_x\), cameraman
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.2grady.jpg" alt="Part1.2 image 1.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          \(D_y\), cameraman
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 750px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.2grad.jpg" alt="Part1.2 image 2.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gradient magnitude
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.2edge.jpg" alt="Part1.2 image 2.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Edge map
+        </figcaption>
+    </figure>
+  </div>
+
+  <h4 id="subpart-1-3">1.3: Derivative of Gaussian (DoG) filter</h4>
+  <p>
+    For smoothing, I use a \(9 \times 9\) Gaussian kernel with \(\sigma = 2\), then I did the gradient 
+    computation. We can clearly observe a reduction in noise in the new gradient map. Also, I computed with 
+    the DoG filter, with nearly identical outcomes, with a slight difference in the overall magnitudes:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 750px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.3gaussiangrad.jpg" alt="Part1.3 image 1.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Blurred with Gaussian, <br>
+          then computed gradient
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.3dog.jpg" alt="Part1.3 image 1.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Convolved with DoG filter
+        </figcaption>
+    </figure>
+  </div>
+  <p> 
+    Besides, I visualized the orientations of the pixel gradients with the HSV colorspace, by setting 
+    the hue as the gradient vector's angle, saturation as 1, and value as the normalized gradient 
+    magnitude:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 400px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/1.3direction.jpg" alt="Part1.3 image 2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Colored gradient orientations
+        </figcaption>
+    </figure>
+  </div>
+
+
+  <h3 id="part-2">Part 2: Frequencies</h3>
+  <h4 id="subpart-2-1">2.1: Image sharpening</h4>
+  <p>
+    In this section, I chose some images to implement sharpening. 
+    The sharpening operation can be formulated as: 
+    \[
+    f + \alpha(f - f * g) = f * ((1+\alpha)e - \alpha g),
+    \]
+    where \(f\) is the image, \(g\) is the Gaussian kernel. Here are my sharpening results: 
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 750px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.1before.jpg" alt="Part2.1 image 1.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Before
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.1sharpened.jpg" alt="Part2.1 image 1.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          After <br>
+          (kernel \(5 \times 5\), \(\sigma = 1.5\), \(\alpha = 1.5\))
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.1.jpg" alt="Part2.1 image 2.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Before
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.11sharpened.jpg" alt="Part2.1 image 2.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          After <br>
+          (kernel \(9 \times 9\), \(\sigma = 2\), \(\alpha = 2\))
+        </figcaption>
+    </figure>
+  </div>
+  
+  <h4 id="subpart-2-2">2.2: Hybrid images</h4>
+  <p>
+    To create a hybrid image, we should blend the high-frequency component of one image with 
+    the low-frequency one of the other. Here is the whole procedure of implementation on a pair of 
+    example images:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2aligned1.jpg" alt="Part2.2 image 1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Aligned, with the base of the ears 
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2aligned2.jpg" alt="Part2.2 image 2.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Switched to greyscale
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 450px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2catFFT1.jpg" alt="Part2.2 image 2.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Frequency map, cat
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2manFFT1.jpg" alt="Part2.2 image 2.3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Frequency map, man
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2catblurred.jpg" alt="Part2.2 image 3.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Blurred cat
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2manblurred.jpg" alt="Part2.2 image 3.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Blurred man
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2catFFT2.jpg" alt="Part2.2 image 3.3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Frequency map, blurred cat
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2manFFT2.jpg" alt="Part2.2 image 3.4" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Frequency map, blurred man
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    Thus, most high-frequency components are filtered out, and the remaining vertical/horizontal lines 
+    in the frequency maps indicate the cropped edges of the images.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 450px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2cathighfreq.jpg" alt="Part2.2 image 4.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Details of the cat
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2catFFT3.jpg" alt="Part2.2 image 4.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Frequency map, details of the cat
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    Now, we have our final outcome. When viewed at a short distance, you will see a cat; 
+    while standing farther from the image, you will see a blurred man.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 300px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2catman.jpg" alt="Part2.2 image 5" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          'Catman'
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    Similarly, we can apply it to other image pairs:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2dragon1.jpg" alt="Part2.2 image 6.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          龙颜大悦(Happy)
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2dragon2.jpg" alt="Part2.2 image 6.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          龙颜大不悦(Angry)
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2longyanhybrid.jpg" alt="Part2.2 image 6.3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Hybrid outcome
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2Jackie1.jpg" alt="Part2.2 image 7.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Young Jackie Chan
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2Jackie2.jpg" alt="Part2.2 image 7.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Older Jackie Chan
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.2jackiechan.jpg" alt="Part2.2 image 7.3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Hybrid outcome
+        </figcaption>
+    </figure>
+  </div>
+
+  <h4 id="subpart-2-3">2.3: Gaussian and Laplacian stacks</h4>
+  <p>
+    To build a Gaussian stack, we should filter an image with a Gaussian filter at each level, 
+    deriving a sequence of images with increasing extent of blur. Note that the Gaussian filter 
+    at higher levels should have larger variance. Here, with the preset base kernel size \(k\) and 
+    standard deviation \(\sigma_0\) , at level \(i\)  the Gaussian kernel has a size of 
+    \(2ik + 1 \times 2ik + 1\)  and the \(\sigma_i\)  of \(0.5i\sigma_0\).
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.3applegaussian.jpg" alt="Part2.3 image 1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Apple Gaussian, # level = 4, \(k\) = 5, \(\sigma_0\) = 5
+        </figcaption>
+      </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.3orangegaussian.jpg" alt="Part2.3 image 2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Orange Gaussian, # level = 4, \(k\) = 5, \(\sigma_0\) = 5
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    To derive the Laplacian stack, we should leave the most blurred image out as the part 
+    with the lowest frequency, and subtract each image from that of a lower level:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.3applelaplacian.jpg" alt="Part2.3 image 1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Apple Laplacian, # level = 4, \(k\) = 8, \(\sigma_0\) = 8
+        </figcaption>
+      </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.3orangelaplacian.jpg" alt="Part2.3 image 2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Orange Laplacian, # level = 4, \(k\) = 8, \(\sigma_0\) = 8
+        </figcaption>
+    </figure>
+  </div>
+
+  <h4 id="subpart-2-4">2.4: Multiresolution blending</h4>
+  <p>
+    Now, with the Laplacian stack, as well as a mask \(m\) creating a vertical seam, we can create a 
+    Gaussian stack \(G\) of the mask, then multiply each level of it with the corresponding level of 
+    image stack \(L_A, L_B\):
+    \[
+    I_i = m_i \odot I_{A_i} + (1- m_i) \odot I_{B_i}.
+    \]
+  </p>
+  <p>
+    Thus, with the masks becoming blurrier at higher levels of the stack, there is more overlap between 
+    the lower-frequency components of the apple and orange, creating a smoother yet not overly ghosted 
+    transition.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.4applemasked.jpg" alt="Part2.4 image 1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Apple, masked
+        </figcaption>
+      </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.4orangemasked.jpg" alt="Part2.4 image 2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Orange, masked
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    By \(\sum_i I_i\), we will have the final blended image:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 300px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.4oraple.jpg" alt="Part2.4 image 3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          'Oraple'
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    Similarly, we can also apply such a technique to scenarios where the masks are in irregular shapes:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 0px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/hinata1.jpg" alt="Part2.4 image 4.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Hinata
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/kageyama.jpg" alt="Part2.4 image 4.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Kageyama
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.4irrmask1.jpg" alt="Part2.4 image 4.3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Mask
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.4hntkgym.jpg" alt="Part2.4 image 4.4" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          'Hinayama'
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 0px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/dongfangmingzhu.jpg" alt="Part2.4 image 5.1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Oriental Pearl Tower, Shanghai
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/sathertower.jpg" alt="Part2.4 image 5.2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Sather Tower, Berkeley
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.4irrmask2.jpg" alt="Part2.4 image 5.3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Mask
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_2/2.4shtower.jpg" alt="Part2.4 image 5.4" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          'Sather Tower, Shanghai'
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="summary">Summary</h3>
+  <p>
+  In a word, this project requires patience, especially when implementing those algorithms on my own chosen 
+  images, because you have to consider the frequency characteristics of the image in order to have a satisfactory 
+  visual effect, and the combination should be interesting as well. Also, finding the edges and generating 
+  the irregular masks are not easy. Anyway, it is a really novel experience, because creativity and 
+  imagination are combined with the seemingly 'cold'/'plain' coding part.
+  </p>
+
+</body>
+</div>
+
+</html>
