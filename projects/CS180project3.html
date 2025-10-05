@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS180 Project 3</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <link rel="stylesheet" href="../style.css">
+ 
+</head>
+<div class="container">
+<body>
+  <header>
+    <h1>CS180 Project 3</h1>
+  </header>
+  
+  <h2 id="Part-A">Part A: Image Warping and Mosaicing</h2>
+  <p>
+    In this <a href="https://cal-cs180.github.io/fa25/hw/proj3/partA.html" target="_blank">part of the project</a>, 
+    we are required to conduct the full pipeline of image warping and mosaicing, from deriving
+    transformation matrices to generating new images by sampling.
+  </p>
+
+  <h3 id="part-A1">A.1: Shoot the pictures</h3>
+  <p>
+  I have acquired three sets of images, with one taken in my apartment's gym, the others taken in 
+  the main stack library and in front of the Doe library on campus. The photos from the gym and Doe were taken 
+  from a fixed center of projection (COP) with horizontal rotations, while the Main Stack images 
+  were taken with vertical rotations around the COP.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 650px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/lib1.jpg" alt="lib1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Main Stack, above
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/lib2.jpg" alt="lib2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Main Stack, below
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/gym1.jpg" alt="gym1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gym, left  
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/gym2.jpg" alt="gym2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gym, middle
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/gym3.jpg" alt="gym3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gym, right
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/campus1.jpg" alt="campus1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campus, left  
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/campus2.jpg" alt="campus2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campus, middle
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/campus3.jpg" alt="campus3" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campus, right
+        </figcaption>
+    </figure>
+  </div>
+ 
+  <h3 id="part-A2">A.2: Recover homographies</h3>
+  <p> 
+    To recover the homographies, I first manually selected corresponding points on the library images, 
+    and computed the homographies between each pair of images. Before implementing the code, some inductions 
+    are needed for the final system of equations.
+  </p>
+  <p>
+    We define the transformation process as \( p^{'} = Hp \):
+    \[
+        \begin{bmatrix}
+            wu \\
+            wv \\
+            w
+        \end{bmatrix} = \begin{bmatrix}
+            a & b & c\\
+            d & e & f \\
+            g & h & 1
+        \end{bmatrix}
+        \begin{bmatrix}
+            x \\
+            y \\
+            1
+        \end{bmatrix}.
+    \]
+    Then in order to derive the form in \(Au = b\), where \(u = (a \, b \, c \, d \, e \, f \, g \, h)^{T}\), from
+    \[
+    \begin{cases}
+    wu = ax + by + c\\
+    wv = dx + ey + f\\
+    w = gx + hy + 1
+    \end{cases},
+    \]
+    by eliminating w, we get:
+    \[
+    \begin{cases}
+    u = \frac{ax + by + c}{gx + hy + 1}\\
+    v = \frac{dx + ey + f}{gx + hy + 1}
+    \end{cases},
+    \]
+    then we can form the system of equations:
+    \[
+    \begin{cases}
+    u = ax + by + c - gxu - hyu\\
+    v = dx + ey + f - gxv - hyv
+    \end{cases},
+    \]
+    so the matrix form for the equations of one corresponding point pair would be:
+    \[
+        \begin{bmatrix}
+            x & y & 1 & 0 & 0 & 0 & -xu & -yu\\
+            0 & 0 & 0 & x & y & 1 & -xv & -yv
+        \end{bmatrix}
+        \begin{bmatrix}
+            a \\
+            b \\
+            c \\
+            d \\
+            e \\
+            f \\
+            g \\
+            h
+        \end{bmatrix} = 
+        \begin{bmatrix}
+            u \\
+            v
+        \end{bmatrix}.
+    \]
+  </p>
+  <p> 
+    Based on the derived matrix form, we can implement the <code>computeH(im1_pts, im2_pts)</code> function: 
+  </p>
+  <pre><code>
+  def transformX(p1, p2):
+      stack = np.array([[p1[0], p1[1], 1, 0, 0, 0, - p1[0] * p2[0], - p1[1] * p2[0]],
+                      [0, 0, 0, p1[0], p1[1], 1, - p1[0] * p2[1], - p1[1] * p2[1]]])
+      return stack
+
+  def computeH(im1_pts,im2_pts):
+      Xlist = [transformX(p1, p2) for p1, p2 in zip(im1_pts, im2_pts)]
+      X = np.vstack(Xlist)
+      Y = np.reshape(im2_pts,(-1, 1))
+      XTXinv = np.linalg.inv(X.T @ X)
+      XTY = X.T @ Y
+      h = XTXinv @ XTY 
+      H = np.array([[h[0, 0], h[1, 0], h[2, 0]],
+                    [h[3, 0], h[4, 0], h[5, 0]],
+                    [h[6, 0], h[7, 0], 1]])
+      return h, H
+  </code></pre>
+  <p> 
+    Now, we can select the corresponding points on the library images, and compute the homographies between each pair of images.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 750px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/points.jpg" alt="points" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Corresponding points on library images
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+  The recovered Homography matrix is:
+  \[
+    \begin{bmatrix}
+        8.03065509e-01 & -3.09177799e-01 &  5.05529173e+01\\
+        5.84114806e-02 &  2.68021700e-01 &  2.84843095e+02\\
+        7.13334305e-05 & -1.33703662e-03 &  1.00000000e+00\\
+    \end{bmatrix}
+  \]
+  </p>
+
+  <h3 id="part-A3">A.3: Warp the images</h3>
+  <p>
+    For image warping, nearest neighbor interpolation and bilinear interpolation are needed after the 
+    coordinate transformation, among which the former one round the coordinates on the object image plane
+    after transformation to the nearest pixel value on the original image, while the bilinear interpolation
+    takes the weighted average of the pixel values in the four nearest neighbors.
+  </p>
+  <pre><code>
+    def warpImageNearestNeighbor(im, H):
+        start = time()
+        ## Determine the bounding box of the warped image
+        h, w, _ = im.shape
+        corners = np.array([
+            [0, 0, 1],
+            [w, 0, 1],
+            [0, h, 1],
+            [w, h, 1]
+        ]).T
+    
+        warped_corners = H @ corners
+        warped_corners /= warped_corners[2,:]
+        xmin, ymin = np.floor(warped_corners[:2].min(axis=1)).astype(int)
+        xmax, ymax = np.ceil(warped_corners[:2].max(axis=1)).astype(int)
+        h1, w1 = ymax-ymin + 1,xmax-xmin + 1
+        im_out = np.zeros((h1 , w1, 3))
+        
+        ## Transform the coordinates of the warped image to the original image
+        x_grid, y_grid = np.meshgrid(np.arange(w1), np.arange(h1)) 
+        P_prime = np.stack([x_grid.flatten(), y_grid.flatten(), np.ones(h1 * w1)])
+        P_prime[[0],:] +=  np.ones(h1 * w1) * xmin
+        P_prime[[1],:] +=  np.ones(h1 * w1) * ymin
+        P = (np.linalg.inv(H) @ P_prime).T
+        P /= P[:,[2]]
+
+        ## Nearest neighbor interpolation
+        for i in range(P.shape[0]):
+            if i % 200000 == 0:
+                print(f'Processed {i} points')
+            x = int(round(P[i,0]))
+            y = int(round(P[i,1]))
+            if 0 <= x < w and 0 <= y < h:
+                im_out[int(i // w1), int(i % w1)] = im[y, x]
+        end = time()
+        print(f'Finished in {end - start:.2f} s')
+        
+        ## Return the warped image and the bounding box for stitching
+        return im_out, xmin, ymin, xmax, ymax    
+  </code></pre>
+  <pre><code>
+    def warpImageBilinear(im, H):
+        ## Determine the bounding box of the warped image
+        
+        ## Transform the coordinates of the warped image to the original image
+
+        ## Nearest neighbor interpolation
+        for i in range(P.shape[0]):
+        if i % 200000 == 0:
+            print(f'Processed {i} points')
+        x1 = int(np.floor(P[i,0]))
+        y1 = int(np.floor(P[i,1]))
+        dx = P[i,0] - x1
+        dy = P[i,1] - y1
+        if 0 <= x1 < w - 1 and 0 <= y1 < h - 1:
+            color = im[y1, x1]*dy*dx + im[y1, x1 + 1]*dy*(1 - dx) 
+            + im[y1 + 1, x1]*(1 - dy)*dx + im[y1 + 1, x1 + 1]*(1 - dy)*(1 - dx)
+            im_out[int(i // w1), int(i % w1)] = color 
+        
+        end = time()
+        print(f'Finished in {end - start:.2f} s')
+        
+        ## Return the warped image and the bounding box for stitching
+        return im_out, xmin, ymin, xmax, ymax    
+  </code></pre>
+  <p> 
+    Now we have our warped images. As you can see, the image with nearest neighbor interpolation has more 
+    aliasing, while the image with bilinear interpolation is more blurry. In the rest of images, I chose to use
+    bilinear interpolation.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 800px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/lib_warping_NN.jpg" alt="lib1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Library, nearest neighbor
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/lib_warping_bilinear.jpg" alt="lib2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Library, bilinear
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/gym1warped.jpg" alt="gym12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gym, left, warped  
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/gym3warped.jpg" alt="gym32" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gym, right, warped
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/campus1warped.jpg" alt="campus12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campus, left, warped  
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/campus3warped.jpg" alt="campus32" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campus, right, warped
+        </figcaption>
+    </figure>
+  </div>
+
+
+  <h3 id="part-A4">A.4: Blend the images into a mosaic</h3>
+  <p>
+     With the warped images as well as their bounding boxes, we can now blend them together to form a mosaic.
+     We first use the bounding boxed to determine the final size of the image mosaic and how the images would
+     fit in the mosaic plane. Furthermore, to soften the image edges, we can use Gaussian kernelw to create 
+     a two-layer Laplacain stack for each image as well as the masks covering the area of the images determining 
+     the target plane. Here are the final mosaics:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 600px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/lib_mosaic.jpg" alt="campus12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Library
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/gym_mosaic.jpg" alt="campus12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gym
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/campus_mosaic.jpg" alt="campus12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campus
+        </figcaption>
+    </figure>
+  </div>
+  
+  <h3 id="part-A5">A.5: (Bells and whistles)</h3>
+    <p>To be updated ...</p>
+
+  <h2 id="Part-B">Part B: Feature Matching for Autostitching</h2>
+    <p>To be updated ...</p>
+  
+</body>
+</div>
+
+</html>
