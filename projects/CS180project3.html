@@ -17,7 +17,7 @@
   <header>
     <h1>CS180 Project 3</h1>
   </header>
-  
+
   <h2 id="Part-A">Part A: Image Warping and Mosaicing</h2>
   <p>
     In this <a href="https://cal-cs180.github.io/fa25/hw/proj3/partA.html" target="_blank">part of the project</a>, 
@@ -338,7 +338,7 @@
   </div>
   <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
     <figure style="flex: 1; text-align: center;">
-        <img src="./CS180_3/gym_mosaic.jpg" alt="campus12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <img src="./CS180_3/gym_mosaic1.jpg" alt="campus12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
         <figcaption style="font-size: 0.85rem; color: #2e324d;">
           Gym
         </figcaption>
@@ -346,19 +346,181 @@
   </div>
   <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
     <figure style="flex: 1; text-align: center;">
-        <img src="./CS180_3/campus_mosaic.jpg" alt="campus12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <img src="./CS180_3/campus_mosaic1.jpg" alt="campus12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
         <figcaption style="font-size: 0.85rem; color: #2e324d;">
           Campus
         </figcaption>
     </figure>
   </div>
   
-  <h3 id="part-A5">A.5: (Bells and whistles)</h3>
-    <p>To be updated ...</p>
-
-  <h2 id="Part-B">Part B: Feature Matching for Autostitching</h2>
-    <p>To be updated ...</p>
+  <h2 id="Part-B"><a href="https://cal-cs180.github.io/fa25/hw/proj3/partB.html" target="_blank">
+    Part B: Feature Matching for Autostitching
+  </a></h2>
+ 
+  <h3 id="part-B1">B.1: Harris Corner Detection</h3>
+    <p>
+      In this section, I used the Harris Corner Detection algorithm to detect corners in images, which
+      is a corner detection operator that  works by computing a corner response function for each pixel 
+      in the image and thresholding the response function to detect corners. However, the number of local 
+      maximums detected by the algorithm are too large, so we need to apply Adaptive Non-Maximal Suppression 
+      (ANMS) to choose the corners by the following steps: <br>
+      &emsp;1. Sort the corners by the response function in descending order. <br>
+      &emsp;2. For each corner \(x_i\): <br>
+      &emsp;&emsp;a. Compute the distance to all other corners. <br>
+      &emsp;&emsp;b. Find the radius \(r_i = \|x_i - x_j\| \, s.t. f(x_i) < 0.9f(x_j)\). <br>
+      &emsp;3. Find \(N\) corners with the largest radius \(r_i\), here I set \(N = 500\). <br>
+    </p>
+    <p>
+      The following figure shows the corners detected by the Harris Corner Detection algorithm with or without ANMS:
+    </p>
+    <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/Harris.jpg" alt="Harris1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Harris Corner Detection w/o ANMS, gym1
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/HarrisANMS.jpg" alt="HarrisANMS1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Harris Corner Detection w/ ANMS, gym1
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/Harris1.jpg" alt="Harris2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Harris Corner Detection w/o ANMS, gym2
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/HarrisANMS1.jpg" alt="HarrisANMS2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Harris Corner Detection w/ ANMS, gym2
+        </figcaption>
+    </figure>
+  </div>
   
+  <h3 id="part-B2">B.2: Feature Extraction</h3>
+  <p>
+    In this section, I used the SIFT algorithm to extract features from images. The descriptor is a 8*8 vector 
+    downsampled from the 40 * 40 surrounding area of an interest point that represents the local appearance of the 
+    it and is invariant to changes in scale and illumination, here I just implemented the version with vertical and
+    horizontal box edges.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 900px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/features.jpg" alt="features" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Part of features, gym1
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 700px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/featureslocation.jpg" alt="featureslocation" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Location of those features
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="part-B3">B.3: Feature Matching</h3>
+  <p>
+    To match corresponding features, I used the KNN algorithm to find the top 2 nearest neighbors 
+    for each feature point in the two images. The distance metric I used is the Euclidean distance.
+    Then, the feature point pairs with the distance ratio of to the nearest and second nearest 
+    neighbors smaller than 0.7 are considered as matched pairs. Since the RANSAC algorithm on the next step 
+    is robust as long as the iteration number is suffcient, we can slightly turn up the threshold. 
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/pointpair.jpg" alt="pointpair12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Extracted point pairs, gym1 & gym2
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/pointpair1.jpg" alt="pointpair32" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Extracted point pairs, gym3 & gym2
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="part-B4">B.4: RANSAC for robust homography</h3>
+  <p>
+    To estimate the homography matrix, I used the RANSAC algorithm. The basic idea is to randomly sample 
+    4 feature point pairs from the matched pairs and estimate the homography matrix using the least squares 
+    method. Then, I counted the number of inliers that satisfy the homography transformation. The inlier 
+    with the largest number of votes are considered as the final matched pairs. Here, I set the inlier 
+    threshold to 2 in Euclidean distance and 4000 as the iteration number.
+  </p>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/gym_mosaicAuto.jpg" alt="gym_mosaicAuto" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gym mosaic with RANSAC
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/gym_mosaic1.jpg" alt="gym_mosaic1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Gym mosaic with manually selected point pairs
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/campus_mosaicAuto.jpg" alt="campus_mosaicAuto" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campus mosaic with RANSAC
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/campus_mosaic1.jpg" alt="campus_mosaic1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campus mosaic with manually selected point pairs
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    Apparently, the mosaic with RANSAC is more robust than the manually selected point pairs, since the
+    the edges are less misaligned. However, the phenomenon still exists, probably due to the non-projectional
+    transformation in images shot by real cameras, with distortions on lens edges. Here, due to the lack of edges in the overlapping area of the library images, the feature matching
+    process failed. Therefore, I just replace them with two street photos.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/scene1.jpg" alt="scene1" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Street scene, above
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/scene2.jpg" alt="scene2" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Street scene, below
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 600px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_3/scene_mosaicAuto.jpg" alt="scene_mosaicAuto" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Street scene mosaic with RANSAC
+        </figcaption>
+    </figure>
+  </div>
+
+
 </body>
 </div>
 
