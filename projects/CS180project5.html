@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS180 Project 4</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <link rel="stylesheet" href="../style.css">
+ 
+</head>
+<div class="container">
+<body>
+  <header>
+    <h1>CS180 Project 5</h1>
+  </header>
+
+  <h2 id="Part-A">Part A: The Power of Diffusion Models</h2>
+  <p>
+  In this part, the main tasks are some experiments with DeepFloyd IF. Here are some results of image generation:
+  <br> (seed used: 100)
+  </p>
+  <div style="display: flex; justify-content: center; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1200px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/0.1.png" alt="Part01" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Prompt: a photo of Chengdu city <br>
+          Inference steps: 20
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/0.2.png" alt="Part02" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Prompt: a photo of Shenzhen and Hong Kong in one frame <br>
+          Inference steps: 20
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/0.3.png" alt="Part02" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Prompt: a photo of Berkeley's Sather Tower shining with Stanford's Hoover Tower falling <br>
+          Inference steps: 25
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+  As you can see, the generated images did not aligned well with the prompt as only part of each 
+  prompts are reflected in the images, this is possibly bacause the Inference steps are not enough,
+  or the model itself is not as strong as the latest models such as SORA by OpenAI and Nano Banana by Google.
+  </p>
+
+  <h3 id="Part-1.1">1.1 Implementing the Forward Process</h3>
+  <p>
+  In this part, I implemented the forward process \(x_t = \sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon_t\),
+  here are the results on the Sather Tower image: 
+  </p>
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/forward.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Noisy images
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="Part-1.2">1.2 Classical Denoising</h3>
+  <p>
+  Then, traditional Gaussian blurring is applied to the noisy images, and the results are shown below:
+  </p>
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/forwardblurred.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Blurred noisy images
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="Part-1.3">1.3 One-Step Denoising</h3>
+  <p>
+  Apparently, the results of traditional Gaussian blurring is far from satisfaction.
+  Therefore, I implemented the one-step denoising process \(x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left(x_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha_t}}} \epsilon_t\right)\),
+  and the results are shown below:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 250px;">
+    <figure style="flex: 1; text-align: center;">
+      <img src="./CS180_5/original.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Original image
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+    <img src="./CS180_5/forward.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Noisy images
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/diffsionblurred.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Estimates of the original image
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="Part-1.4">1.4 Iterative Denoising</h3>
+  <p>
+  For higher image quality, I implemented the iterative denoising process \(
+x_{t'} = \frac{\sqrt{\bar{\alpha}_{t'}\,\beta_t}}{1 - \bar{\alpha}_t} \, x_0
+\;+\;
+\frac{\sqrt{\alpha_t}\,(1 - \bar{\alpha}_{t'})}{1 - \bar{\alpha}_t} \, x_t
+\;+\;
+v_\sigma
+\), and the results are shown below:
+  </p>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/denoise6.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          t = 90
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/denoise5.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          t = 240
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/denoise4.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          t = 390
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/denoise3.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          t = 540
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/denoise2.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          t = 690
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/comparison.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Different denoising methods
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="Part-1.5">1.5 Diffusion Model Sampling</h3>
+  <p>
+  Start from this section, the experiments are about image generation.
+  By simply sampling, the results are shown below:
+  </p>
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/sample.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Sampled images
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="Part-1.6">1.6 Classifier-Free Guidance (CFG)</h3>
+  <p>
+  For better image quality, CFG is implemented by adding a conditional term to the denoising process. The results are shown below:
+  </p>
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/sample1.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Sampled images, with CFG
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="Part-1.7">1.7 Image-to-image Translation</h3>
+
+  <h4 id="Part-1.7A">1.7.1 Image Editing</h3>
+  <p>
+  With CFG and the default "a high-quality image" prompt, we can edit real or hand-drawn images:
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/original.png" alt="Part11" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Source image 1, Campanile
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/kita.jpg" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Source image 2, Kita
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/portrait.jpg" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Source image 3, myself
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/penguin.jpg" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Source image 4, Penguin
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/campanile_edited.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Campanile, edited
+        </figcaption>
+    </figure>
+  </div>
+
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/kita_edited.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Kita, edited
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/penguin_edited.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Penguin, edited
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 1px; margin: 0 auto; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/portrait_edited.png" alt="Part13" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Portrait, edited
+        </figcaption>
+    </figure>
+  </div>
+      <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/web/kgym.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Source image 5, Kageyama (from the Internet)
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn1/original.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Source image 6, hand-drawn
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn2/original.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Source image 7, hand-drawn
+        </figcaption>
+    </figure>
+  </div>
+    <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/web/1_.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 1
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/web/3_.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 3
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/web/5.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 5
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/web/7.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 7
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/web/10.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 10
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/web/20.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 20
+        </figcaption>
+    </figure>
+  </div>
+      <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn1/1.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 1
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn1/3.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 3
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn1/5.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 5
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn1/7.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 7
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn1/10.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 10
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn1/20.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 20
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn2/1.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 1
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn2/3.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 3
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn2/5.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 5
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn2/7.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 7
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn2/10.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 10
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/handdrawn2/20.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          i_start = 20
+        </figcaption>
+    </figure>
+  </div>
+  <h4 id="Part-1.7B">1.7.2 Inpainting</h3>
+  <p>
+  Also, by involving a mask, we can edit the designated area of an image:
+  </p>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/campanile.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Original
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/masked1.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Masked area
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/inpainting1.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Inpainted image
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/kgym.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Original
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/mask2.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Masked area
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/inpainting2.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Inpainted image
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/1.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Original
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/mask3.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Masked area
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/1.7.2/inpainting3.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Inpainted image
+        </figcaption>
+    </figure>
+  </div>
+
+  <h4 id="Part-1.7B">1.7.3 Text-Conditional Image-to-image Translation</h3>
+  <p>
+  By modifying the text prompt, we can generate images a different style. Here I used the prompt
+  "a photo of Chengdu city" for all images.
+  </p>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/chengdu_edited1.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Edited Campanile
+        </figcaption>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/chengdu_edited2.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Edited house
+        </figcaption>
+  </div>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/chengdu_edited3.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Edited couple
+        </figcaption>
+  </div>
+
+  <h3 id="Part-1.8">1.8 Visual Anagrams</h3>
+  <p>
+  To create optical illusions with diffusion models, we will denoise an image \(x_t\) at 
+  step \(t\), normally with the prompt \(p_1\), to obtain noise estimate \(\epsilon_1\). 
+  But at the same time, we will flip \(x_t\) upside down, and denoise with the prompt \(p_2\), 
+  to get noise estimate \(\epsilon_2\). We can flip \(\epsilon_2\) back, and average the two noise 
+  estimates. We can then perform a reverse/denoising diffusion step with the averaged noise estimate.
+  </p>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem; max-width: 800px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/flipped1.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          A woman
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/flipped11.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          A tower
+        </figcaption>
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem; max-width: 800px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/flipped2.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          An ancient Chinese city
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/flipped21.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          A Berkeley-like city
+        </figcaption>
+    </figure>
+  </div>
+
+  <h3 id="Part-1.9">1.9 Hybrid Images</h3>
+  <p>
+  Also, we can take the low frequency component of \(\epsilon_1\) and the high frequency component
+  of \(\epsilon_2\) to create a hybrid image:
+  </p>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem; max-width: 800px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/hybrid3.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          By far it is Campanile, by close it is a pagoda
+        </figcaption>
+    </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5/hybrid6.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          By far it is a person, by close it is a tower and a tree
+        </figcaption>
+    </figure>
+  </div>
+  
+  
+
+
+
+  <h2 id="Part-B">Part B: Flow Matching</h2>
+ 
+  <h3 id="part-B1">1.1: Train a denoising U-Net</h3>
+
+  <p>To be updated...</p>
+
+</body>
+
+
+</html>
