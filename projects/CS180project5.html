@@ -540,15 +540,133 @@ v_\sigma
     </figure>
   </div>
   
-  
-
-
-
   <h2 id="Part-B">Part B: Flow Matching</h2>
  
-  <h3 id="part-B1">1.1: Train a denoising U-Net</h3>
+  <h3 id="part-B1">1: Train a denoising U-Net</h3>
 
-  <p>To be updated...</p>
+  <p>
+    First of all, the noising process is to add Gaussian noise to the image. Here are some images 
+    with different levels of noise added to the same original image:
+  </p>
+  <div style="display: flex; justify-content: space-around; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5B/addnoise.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+        <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Noisy images
+        </figcaption>
+    </figure>
+  </div>
+  <p>
+    Then, we train a denoising U-Net to denoise the noisy images. The U-Net is trained with the 
+    noisy images as input and the original images as target, and we first set the noise level to 0.5: 
+  </p>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5B/test_sample_epoch_0.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5B/test_sample_epoch_4.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5B/loss_curve.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    </figure>
+  </div>
+  <p>
+    Also, there are sample results on the test set with out-of-distribution noise levels:
+  </p>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem; max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5B/ood_testing.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    </figure>
+  </div>
+  <p>
+  Lastly, I tried to denoise pure noisy images. The results are shown below, which is probably
+  an image where all the numbers overlap on each other if the model is fully trained, because the 
+  model is trained to recover MNIST digits from pure noise without any input-label correspondence 
+  (a one-to-many mapping that cannot be learned), it can only capture the global average structure 
+  of the dataset rather than specific digits. As a result, the network collapses toward producing 
+  the most common, averaged stroke patterns found across MNIST. 
+  </p>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;max-width: 1000px;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5B/loss_curve2.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    </figure>
+  </div>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5B/pure_noise_test_sample_epoch_1.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Epoch 1
+    </figcaption>
+  </figure>
+    <figure style="flex: 1; text-align: center;">
+        <img src="./CS180_5B/pure_noise_test_sample_epoch_5.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Epoch 5
+    </figcaption>
+  </figure>
+  </div>
+
+  <h3 id="part-B2">2: Training a Flow Matching Model</h3>
+
+  <p>
+    Next, we train a flow matching model to denoise the noisy images and for image generations.
+    To implement that, we need to train a UNet model to predict the `flow' from our noisy data to clean data.
+  </p>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+    <img src="./CS180_5B/loss_curve3.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+  </figure>
+  </div>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+    <img src="./CS180_5B/time_sample.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Sample results from the time-conditioned UNet
+    </figcaption>
+  </figure>
+  </div>
+
+  <p>
+    In fact, the sampling result looks quite good. The model can recover the digits from the noisy images.
+    However, we also want to generate an image given a label, so class conditions should be included.
+  </p>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+    <img src="./CS180_5B/loss_curve4.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+  </figure>
+  </div>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+    <img src="./CS180_5B/class_sample.png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Generation results given label 2 from the class-conditioned UNet, with learning scheduler
+    </figcaption>
+  </figure>
+  </div>
+
+  <p>
+    Meanwhile, it was discovered that the learning scheduler with initial learning rate 1e-2
+    can be replaced by a fixed learning rate 1e-4. Although the convergence is slower, the final
+    results look comparably good to those with a learning scheduler:
+  </p>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+    <img src="./CS180_5B/loss_curve4 (1).png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+  </figure>
+  </div>
+  <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+    <figure style="flex: 1; text-align: center;">
+    <img src="./CS180_5B/class_sample (1).png" alt="Part12" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 3px;">
+    <figcaption style="font-size: 0.85rem; color: #2e324d;">
+          Generation results given label 2 from the class-conditioned UNet, without learning scheduler
+    </figcaption>
+  </figure>
+  </div>
 
 </body>
 
